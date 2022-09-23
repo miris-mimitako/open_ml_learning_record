@@ -18,15 +18,17 @@ for_result_test_data = pd.read_csv(r"C:\Users\0720k\myapplications\open_ml_learn
 def drop_columns(df, list_columns=[]):
   return df.drop(list_columns, axis =1 )
 
-list_columns =  ["PassengerId", "Name", "Ticket", "Fare", "Cabin", "Embarked"]
+list_columns =  ["PassengerId", "Name", "Ticket" ]
+# list_columns =  ["PassengerId", "Name", "Ticket", "Cabin" ]
+
 train_data = drop_columns(train_data, list_columns)
-list_columns_test =  ["PassengerId", "Name", "Ticket", "Fare", "Cabin", "Embarked"]
+# list_columns_test =  ["PassengerId", "Name", "Ticket", "Cabin"]
+list_columns_test =  ["PassengerId", "Name", "Ticket"]
+
+# list_columns_test =  ["PassengerId", "Name", "Ticket", "Fare", "Cabin", "Embarked"]
 test_data = drop_columns(test_data, list_columns_test)
 
-# Remove nan in exist columns
 
-train_data.fillna(train_data.mean(),inplace=True)
-test_data.fillna(test_data.mean(),inplace=True)
 
 # Split purpose
 
@@ -41,7 +43,8 @@ def one_hot_vector(df, list_OHV_columns):
     df = pd.get_dummies(df, columns=[column_name], prefix="oh"+column_name, sparse=True)
   return df
 
-one_hot_columns = ["Pclass"]
+one_hot_columns = ["Pclass", "Embarked"]
+# one_hot_columns = ["Pclass"]
 train_data = one_hot_vector(train_data, one_hot_columns)
 test_data = one_hot_vector(test_data, one_hot_columns)
 
@@ -50,6 +53,18 @@ test_data = one_hot_vector(test_data, one_hot_columns)
 sex_le = LabelEncoder()
 train_data.Sex = sex_le.fit_transform(train_data.Sex)
 test_data.Sex = sex_le.fit_transform(test_data.Sex)
+
+cab_le = LabelEncoder()
+train_data.Cabin = cab_le.fit_transform(train_data.Cabin)
+test_data.Cabin = cab_le.fit_transform(test_data.Cabin)
+
+
+# Remove nan in exist columns
+train_data.Cabin.fillna(0, inplace= True)
+test_data.Cabin.fillna(0, inplace= True)
+
+train_data.fillna(train_data.mean(),inplace=True)
+test_data.fillna(test_data.mean(),inplace=True)
 
 # Standardization
 
@@ -70,32 +85,70 @@ y_train = y_train.reshape(-1,1)
 y_test = y_test.reshape(-1,1)
 
 
-model = Sequential()
-model.add(Dense(100, activation = "relu", input_dim = X_train.shape[1], name = "layer_1", kernel_regularizer=regularizers.l2(0.001)))
-model.add(Dropout(0.5))
-model.add(Dense(50, activation = "sigmoid", name = "layer_2", kernel_regularizer=regularizers.l2(0.001)))
-model.add(Dropout(0.5))
-model.add(Dense(25, activation = "sigmoid", name = "layer_3" , kernel_regularizer=regularizers.l2(0.001)))
-model.add(Dense(1, activation = "sigmoid", name ="output_layer")) 
-model.compile(loss="binary_crossentropy", optimizer="adam", metrics=['acc'])
+# model = Sequential()
+# model.add(Dense(100, activation = "relu", input_dim = X_train.shape[1], name = "layer_1", kernel_regularizer=regularizers.l2(0.001)))
+# model.add(Dropout(0.5))
+# model.add(Dense(50, activation = "sigmoid", name = "layer_2", kernel_regularizer=regularizers.l2(0.001)))
+# model.add(Dropout(0.5))
+# model.add(Dense(25, activation = "sigmoid", name = "layer_3" , kernel_regularizer=regularizers.l2(0.001)))
+# model.add(Dense(1, activation = "sigmoid", name ="output_layer")) 
+# model.compile(loss="binary_crossentropy", optimizer="adam", metrics=['acc'])
 
-model.fit(X_train, y_train, epochs=5000, batch_size=16)
+# model.fit(X_train, y_train, epochs=2500, batch_size=32)
+
+# score = model.evaluate(X_train, y_train)
+# print("")
+# print("Train loss:{0}".format(score[0]))
+# print("Train accuracy:{0}".format(score[1]))
+# t_score = model.evaluate(X_test, y_test)
+# print("")
+# print("Test loss:{0}".format(t_score[0]))
+# print("Test accuracy:{0}".format(t_score[1]))
+
+# result = model.predict(test_data.values)
+
+# df_suv = pd.DataFrame(result, columns = ["Survived"])
+# df_suv.Survived = round(df_suv.Survived)
+# df_suv.Survived = df_suv.Survived.astype('int8')
+# df_r = pd.concat([for_result_test_data, df_suv], axis=1)
+# df_r.drop(columns=[ "Name", "Ticket", "Fare", "Cabin", "Embarked",'Sex', 'Age', 'SibSp', 'Parch', 'Pclass'],inplace =True)
+# df_r.to_csv("test_result5.csv", index = False)
 
 
-score = model.evaluate(X_train, y_train)
+
+model2 = Sequential()
+model2.add(Dense(128, activation = "relu", input_dim = X_train.shape[1], name = "layer_1", kernel_regularizer=regularizers.l2(0.001)))
+# model2.add(Dropout(0.5))
+model2.add(Dense(128, activation = "relu", name = "layer_2", kernel_regularizer=regularizers.l2(0.001)))
+model2.add(Dropout(0.5))
+model2.add(Dense(128, activation = "relu", name = "layer_3" , kernel_regularizer=regularizers.l2(0.001)))
+# model2.add(Dropout(0.5))
+model2.add(Dense(128, activation = "relu", name = "layer_4" , kernel_regularizer=regularizers.l2(0.001)))
+model2.add(Dropout(0.5))
+model2.add(Dense(64, activation = "relu", name = "layer_5" , kernel_regularizer=regularizers.l2(0.001)))
+# model2.add(Dropout(0.5))
+model2.add(Dense(64, activation = "relu", name = "layer_6" , kernel_regularizer=regularizers.l2(0.001)))
+model2.add(Dropout(0.5))
+model2.add(Dense(16, activation = "relu", name = "layer_7" , kernel_regularizer=regularizers.l2(0.001)))
+model2.add(Dense(1, activation = "sigmoid", name ="output_layer")) 
+model2.compile(loss="binary_crossentropy", optimizer="adam", metrics=['acc'])
+
+model2.fit(X_train, y_train, epochs=2500, batch_size=32)
+
+score2 = model2.evaluate(X_train, y_train)
 print("")
-print("Train loss:{0}".format(score[0]))
-print("Train accuracy:{0}".format(score[1]))
-t_score = model.evaluate(X_test, y_test)
+print("Train loss:{0}".format(score2[0]))
+print("Train accuracy:{0}".format(score2[1]))
+t_score2 = model2.evaluate(X_test, y_test)
 print("")
-print("Test loss:{0}".format(t_score[0]))
-print("Test accuracy:{0}".format(t_score[1]))
+print("Test loss:{0}".format(t_score2[0]))
+print("Test accuracy:{0}".format(t_score2[1]))
 
-result = model.predict(test_data.values)
+result2 = model2.predict(test_data.values)
 
-df_suv = pd.DataFrame(result, columns = ["Survived"])
-df_suv.Survived = round(df_suv.Survived)
-df_suv.Survived = df_suv.Survived.astype('int8')
-df_r = pd.concat([for_result_test_data, df_suv], axis=1)
+df_suv2 = pd.DataFrame(result2, columns = ["Survived"])
+df_suv2.Survived = round(df_suv2.Survived)
+df_suv2.Survived = df_suv2.Survived.astype('int8')
+df_r = pd.concat([for_result_test_data, df_suv2], axis=1)
 df_r.drop(columns=[ "Name", "Ticket", "Fare", "Cabin", "Embarked",'Sex', 'Age', 'SibSp', 'Parch', 'Pclass'],inplace =True)
-df_r.to_csv("test_result.csv", index = False)
+df_r.to_csv("test_result9.csv", index = False)
